@@ -34,7 +34,7 @@ Always [use an existing Secret](#using-an-existing-secret) and supply all
 passwords and secret keys yourself to avoid Helm re-generating any of them for
 you.
 
-We recommend setting both `postgresql.enabled` and `redis.enabled` to
+We recommend setting both `postgresql.enabled` and `valkey.enabled` to
 `false` and using a separate external PostgreSQL and Redis instance. This
 de-couples those services from the chart's bundled versions which may have
 complex upgrade requirements. A clustered PostgreSQL server (e.g. using Zalando's
@@ -214,13 +214,13 @@ The following table lists the configurable parameters for this chart and their d
 | `externalDatabase.connMaxAge`                   | The lifetime of a database connection, as an integer of seconds     | `300`                                        |
 | `externalDatabase.disableServerSideCursors`     | Disable the use of server-side cursors transaction pooling          | `false`                                      |
 | `externalDatabase.targetSessionAttrs`           | Determines whether the session must have certain properties         | `read-write`                                 |
-| `redis.enabled`                                 | Deploy Redis using bundled Bitnami Redis chart                      | `true`                                       |
-| `redis.*`                                       | Values under this key are passed to the bundled Redis chart         | n/a                                          |
-| `tasksRedis.database`                           | Redis database number used for NetBox task queue                    | `0`                                          |
-| `tasksRedis.ssl`                                | Enable SSL when connecting to Redis                                 | `false`                                      |
+| `valkey.enabled`                                 | Deploy Valkey using bundled Bitnami Valkey chart                      | `true`                                       |
+| `valkey.*`                                       | Values under this key are passed to the bundled Valkey chart         | n/a                                          |
+| `tasksRedis.database`                           | Redis/Valkey database number used for NetBox task queue                    | `0`                                          |
+| `tasksRedis.ssl`                                | Enable SSL when connecting to Redis/Valkey                                 | `false`                                      |
 | `tasksRedis.insecureSkipTlsVerify`              | Skip TLS certificate verification when connecting to Redis          | `false`                                      |
 | `tasksRedis.caCertPath`                         | Path to CA certificates bundle for Redis (needs mounting manually)  | `""`                                         |
-| `tasksRedis.host`                               | Redis host to use when `redis.enabled` is `false`                   | `"netbox-redis"`                             |
+| `tasksRedis.host`                               | Redis host to use when `valkey.enabled` is `false`                   | `"netbox-redis"`                             |
 | `tasksRedis.port`                               | Port number for external Redis                                      | `6379`                                       |
 | `tasksRedis.sentinels`                          | List of sentinels in `host:port` form (`host` and `port` not used)  | `[]`                                         |
 | `tasksRedis.sentinelService`                    | Sentinel master service name                                        | `"netbox-redis"`                             |
@@ -233,7 +233,7 @@ The following table lists the configurable parameters for this chart and their d
 | `cachingRedis.ssl`                              | Enable SSL when connecting to Redis                                 | `false`                                      |
 | `cachingRedis.insecureSkipTlsVerify`            | Skip TLS certificate verification when connecting to Redis          | `false`                                      |
 | `cachingRedis.caCertPath`                       | Path to CA certificates bundle for Redis (needs mounting manually)  | `""`                                         |
-| `cachingRedis.host`                             | Redis host to use when `redis.enabled` is `false`                   | `"netbox-redis"`                             |
+| `cachingRedis.host`                             | Redis host to use when `valkey.enabled` is `false`                   | `"netbox-redis"`                             |
 | `cachingRedis.port`                             | Port number for external Redis                                      | `6379`                                       |
 | `cachingRedis.sentinels`                        | List of sentinels in `host:port` form (`host` and `port` not used)  | `[]`                                         |
 | `cachingRedis.sentinelService`                  | Sentinel master service name                                        | `"netbox-redis"`                             |
@@ -458,7 +458,7 @@ Type: `kubernetes.io/basic-auth`
 
 | Key                    | Description                                                   | Required?                                                                                         |
 | -----------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `redis-password`       | Password for the external Redis database (tasks and/or cache) | If `redis.enabled` is `false`                                                                     |
+| `redis-password`       | Password for the external Redis database (tasks and/or cache) | If `valkey.enabled` is `false`                                                                     |
 
 ## Authentication
 * [Single Sign On](docs/auth.md#configuring-sso)
@@ -480,7 +480,7 @@ Type: `kubernetes.io/basic-auth`
   * NAPALM support has been moved into a plugin since NetBox 3.5, so all NAPALM configuration has been **removed from this chart**.
   * Please consult the [NetBox](https://docs.netbox.dev/en/stable/release-notes/) and [netbox-docker](https://github.com/netbox-community/netbox-docker) release notes in case there are any other changes that may affect your configuration.
 * The Bitnami [PostgreSQL](https://github.com/bitnami/charts/tree/main/bitnami/postgresql) sub-chart was upgraded from 10.x to 15.x; please read the upstream upgrade notes if you are using the bundled PostgreSQL.
-* The Bitnami [Redis](https://github.com/bitnami/charts/tree/main/bitnami/redis) sub-chart was upgraded from 15.x to 20.x; please read the upstream upgrade notes if you are using the bundled Redis.
+* The Bitnami [Redis](https://github.com/bitnami/charts/tree/main/bitnami/redis) sub-chart was upgraded from 15.x to 20.x; please read the upstream upgrade notes if you are using the bundled valkey.
 
 ### From 3.x to 4.x
 
@@ -503,7 +503,7 @@ Type: `kubernetes.io/basic-auth`
 ### From 1.x to 2.x
 
 If you use an external Redis you will need to update your configuration values
-due to the chart reflecting upstream changes in how it uses Redis. There are
+due to the chart reflecting upstream changes in how it uses valkey. There are
 now separate Redis configuration blocks for webhooks and for caching, though
 they can both point at the same Redis instance as long as the database numbers
 are different.
