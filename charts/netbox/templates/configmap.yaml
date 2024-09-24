@@ -170,6 +170,7 @@ data:
     {{ $.Files.Get "files/ldap_config.py" | nindent 4 }}
 
   ldap.yaml: |-
+    # https://django-auth-ldap.readthedocs.io/en/latest/reference.html
     AUTH_LDAP_SERVER_URI: {{ $.Values.remoteAuth.ldap.serverUri | quote }}
     AUTH_LDAP_BIND_DN: {{ $.Values.remoteAuth.ldap.bindDn | quote }}
     AUTH_LDAP_START_TLS: {{ toJson $.Values.remoteAuth.ldap.startTls }}
